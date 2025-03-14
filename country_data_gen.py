@@ -126,21 +126,51 @@ for i in range(1, number_rows):
 df_actions = pd.DataFrame(data_actions, columns=action_columns)
 df_future_actions = pd.DataFrame(data_future_actions, columns=future_action_columns)
 
-# Generate X data with realistic fluctuations
+# Generate X data with realistic fluctuations, including linear growth and periodic variations
 data_X_optimized = []
 current_values = initial_values.copy()
 
+# Generate the data with fluctuations
 for i in range(number_rows):
     row = []
+    
+    # Add linear growth trend to each parameter (this models the country's overall development)
+    growth_trend = 0.01  # Assumed average annual growth rate of 1% for most parameters
+    
+    # Periodic terms (sinusoidal variations)
+    period_1 = 52.177142857  # Annual cycle (weekly data, approximately 1 year per cycle)
+    period_2 = 208.70857142857  # Longer cycle (~4 years for example)
+    
+    # Random phase shifts for each periodic term
+    phase_1 = np.random.uniform(0, 2 * np.pi)
+    phase_2 = np.random.uniform(0, 2 * np.pi)
+    
     for col in columns_X:
-        change = np.random.uniform(-2, 2)  # Apply small fluctuations
-        new_value = current_values[col] * (1 + change / 100) if 'Rate' in col or 'Index' in col else current_values[col] + change
-        current_values[col] = new_value
+        # Base value with linear growth over time
+        linear_growth = current_values[col] * (1 + growth_trend)  # Apply growth rate
+
+        # Add periodic sinusoidal fluctuation
+        # Scale the periodic fluctuation with respect to the initial value of the parameter
+        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.05, 0.1))*2
+        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.05, 0.1))*2
+
+        # Add a small random fluctuation proportional to the initial value
+        random_fluctuation = np.random.uniform(-0.01, 0.01) * initial_values[col]
+
+        # Combine the trend, periodic fluctuations, and random fluctuation
+        new_value = linear_growth + periodic_1 + periodic_2 + random_fluctuation
+        current_values[col] = new_value  # Update the current value
+        
+        # Append the new value to the row
         row.append(round(new_value, 2))
+    
     data_X_optimized.append(row)
 
-# Combine all the data
+
+# Create DataFrame for the X data
 df_X_optimized = pd.DataFrame(data_X_optimized, columns=columns_X)
+
+# Combine all the data
 df_optimized = pd.concat([df_X_optimized, df_actions, df_future_actions], axis=1)
 
 # Save the data to a CSV file for further analysis
