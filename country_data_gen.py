@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+number_rows = 100 # Number of rows you want
+
 # Define the columns for the X data (country states)
 columns_X = [
     'GDP', 'Unemployment Rate', 'Inflation Rate', 'Foreign Debt',
@@ -73,9 +75,9 @@ initial_values = {
     'Global Trade Index': 0.7  # Global Trade Index
 }
 
-# Generate 24 rows of data for actions (X) and apply the rules based on the above factors
+# Generate  number_rows rows of data for actions (X) and apply the rules based on the above factors
 data_actions = []
-for i in range(24):
+for i in range(number_rows):
     row = []
     for action in action_impacts:
         # Define logic for actions based on realistic tendencies
@@ -110,7 +112,7 @@ for i in range(24):
 
 # Future actions based on previous period (Y)
 data_future_actions = []
-for i in range(24):
+for i in range(number_rows):
     row = []
     for action in future_action_columns:
         action_type = np.random.choice(['Positive Direction', 'Negative Direction'])
@@ -129,7 +131,8 @@ df_future_actions = pd.DataFrame(data_future_actions, columns=future_action_colu
 data_X_optimized = []
 current_values = initial_values.copy()
 
-for i in range(24):
+for i in range(number_rows):
+    # Create a new row based on the current values, applying small fluctuations
     row = []
     for col in columns_X:
         change = np.random.uniform(-2, 2)  # Apply small fluctuations
