@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-number_rows = 100  # Number of rows you want
+number_rows = 522  # Number of rows you want
 
 # Define the columns for the X data (country states)
 columns_X = [
@@ -135,7 +135,7 @@ for i in range(number_rows):
     row = []
     
     # Add linear growth trend to each parameter (this models the country's overall development)
-    growth_trend = 0.01  # Assumed average annual growth rate of 1% for most parameters
+    growth_trend = 0.0002  # Assumed average annual growth rate of 1% for most parameters
     
     # Periodic terms (sinusoidal variations)
     period_1 = 52.177142857  # Annual cycle (weekly data, approximately 1 year per cycle)
@@ -151,8 +151,8 @@ for i in range(number_rows):
 
         # Add periodic sinusoidal fluctuation
         # Scale the periodic fluctuation with respect to the initial value of the parameter
-        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.05, 0.1))*2
-        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.05, 0.1))*2
+        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.02, 0.05))
+        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.02, 0.05))
 
         # Add a small random fluctuation proportional to the initial value
         random_fluctuation = np.random.uniform(-0.01, 0.01) * initial_values[col]
