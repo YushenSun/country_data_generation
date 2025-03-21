@@ -190,11 +190,11 @@ for i in range(number_rows):
 
         # Add periodic sinusoidal fluctuation
         # Scale the periodic fluctuation with respect to the initial value of the parameter
-        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.02, 0.05))
-        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.02, 0.05))
+        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.02, 0.03))
+        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.02, 0.03))
 
         # Add a small random fluctuation proportional to the initial value
-        random_fluctuation = np.random.uniform(-0.01, 0.01) * initial_values[col]
+        random_fluctuation = np.random.uniform(-0.005, 0.005) * initial_values[col]
 
         # Combine the trend, periodic fluctuations, and random fluctuation
         new_value = linear_growth + periodic_1 + periodic_2 + random_fluctuation
