@@ -89,48 +89,57 @@ for i in range(1, number_rows):
     row_actions = [0] * len(action_columns)  # Initialize the row actions to zero for each action
     row_state = []  # Initialize a list for the state values
 
+    # Initialize the temporary impact values for this row (independent impacts for each action)
+    action_impacts = np.zeros(len(columns_X))  # This will store the impact of actions on states for this row
+
     # For each action, calculate its value based on the current state values (from the previous row)
     for j, action in enumerate(action_columns):
-        if action == 'A Major Political Actions':  # For the first action: A Major Political Action (e.g., public declaration of support)
-            # Extract parameters from the previous row's state data
+        if action == 'A Major Political Actions':  # For the first action: A Major Political Action (e.g., public declaration of support or opposition)
             a_public_trust = current_values['A Public Trust']
             a_political_stability = current_values['A Political Stability']
-            a_bilateral_diplomatic_relations = current_values['Ethnic Similarity']
 
-            # Define the public declaration of support formula
-            support_probability = 0.3 + 0.05 * (a_public_trust - 50) + 0.1 * (a_political_stability - 5.5) + 0.2 * a_bilateral_diplomatic_relations
-
-            # Generate a random number between 0 and 1
+            # Calculate A's support action (Public Declaration of Support)
+            a_bilateral_diplomatic_relations_support = current_values['Ethnic Similarity']  # Use Ethnic Similarity for support
+            support_probability = 0.3 + 0.05 * (a_public_trust - 60) + 0.1 * (a_political_stability - 6.5) + 0.2 * a_bilateral_diplomatic_relations_support
             random_value = np.random.random()
 
-            # Trigger the action if the random value is less than the support probability
             if random_value < support_probability:
-                row_actions[j] = 3  # Action taken (3 indicates action)
-            else:
-                row_actions[j] = 0  # No action taken
+                row_actions[j] += 3  # Action taken (3 indicates action for support)
+                # Accumulate the impact on the state parameters
+                action_impacts[columns_X.index('A Public Trust')] += 0.1
+                action_impacts[columns_X.index('A Political Stability')] += 0.05
+                action_impacts[columns_X.index('A Trade Balance')] += 0.03
+
+            # Calculate A's opposition action (A Opposes B)
+            a_unemployment_rate = current_values['A Unemployment Rate']
+            a_bilateral_diplomatic_relations_opposition = current_values['A to B Exports'] - current_values['A to B Imports']  # Use the trade balance for opposition
+            opposition_probability = 0.3 + 0.05 * (a_unemployment_rate - 8) - 0.1 * a_bilateral_diplomatic_relations_opposition
+            random_value = np.random.random()
+
+            if random_value < opposition_probability:
+                row_actions[j] += -3  # Action taken (negative action for opposition)
+                # Accumulate the impact on the state parameters
+                action_impacts[columns_X.index('A Public Trust')] -= 0.05
+                action_impacts[columns_X.index('A Political Stability')] -= 0.02
 
         else:
-            row_actions[j] = 0  # Default to 0 if the action isn't defined yet
+            row_actions[j] += 0  # Default to 0 if the action isn't defined yet
 
-    # Assign the row actions directly to the DataFrame
-    data_actions.loc[i] = row_actions
-
-    # Apply action effects on states using matrix multiplication
+    # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
-        # Linear growth or change
-        change = np.random.uniform(-2, 2)  # Random fluctuation
-        new_value = current_values[col] * (1 + change / 100)  # Apply random fluctuation
+        # Apply random fluctuation to the state value
+        change = np.random.uniform(-2, 2)
+        new_value = current_values[col] * (1 + change / 100) if 'Rate' in col or 'Index' in col else current_values[col] + change
 
-        # Apply the effects of actions on the states by matrix multiplication
-        action_effect = np.dot(row_actions, M[:, columns_X.index(col)])  # Action impact on state
-        print(f"Action effect for {col}: {action_effect}")  # Debug statement to check action effects
-
-        # Update the state value considering the action effect
-        new_value += action_effect
+        # Apply the accumulated action impact to the state value
+        action_effect = action_impacts[columns_X.index(col)]
+        new_value += action_effect  # Add the impact of actions on the state parameter
 
         current_values[col] = new_value  # Update the current value
         row_state.append(round(new_value, 2))  # Append the updated state value to the row state
 
+    # Assign the row actions directly to the DataFrame
+    data_actions.loc[i] = row_actions
     data_X_optimized.append(row_state)  # Append the row state data
 
 # Convert the list of rows into a DataFrame
