@@ -76,7 +76,7 @@ initial_values = {
     'A Human Development Index': 0.75, 
     'A Freedom of Press': 60.0, 
     'A Corruption Index': 50.0,
-    'A Military Power': 800, 
+    'A Military Power': 800*10, 
     'A Alliances': 2, 
     'A Environmental Quality': 70.0, 
     'A Natural Resources Availability': 100,
@@ -176,7 +176,7 @@ for i in range(1, number_rows):
             random_value = np.random.random()
 
             if random_value < opposition_probability:
-                row_actions[j] += -3  # Action taken (negative action for opposition)
+                row_actions[j] += -4  # Action taken (negative action for opposition)
                 # Accumulate the impact on the state parameters
                 action_impacts[columns_X.index('A Public Trust')] -= 0.05
                 action_impacts[columns_X.index('A Political Stability')] -= 0.02
@@ -197,7 +197,7 @@ for i in range(1, number_rows):
                 random_value = np.random.random()
 
                 if random_value < sanction_probability:
-                    row_actions[j] += -3  # Negative action for trade sanctions (e.g., -3 indicates trade sanctions)
+                    row_actions[j] += -4  # Negative action for trade sanctions (e.g., -3 indicates trade sanctions)
                     # Apply the impact on states (e.g., a decrease in public trust, economic stability, etc.)
                     action_impacts[columns_X.index('A Public Trust')] -= 0.1
                     action_impacts[columns_X.index('A Political Stability')] -= 0.05
@@ -217,7 +217,7 @@ for i in range(1, number_rows):
             random_value = np.random.random()
 
             if random_value < aid_probability:
-                row_actions[j] += 3  # Positive action for economic aid (e.g., 3 indicates aid provided)
+                row_actions[j] += 5  # Positive action for economic aid (e.g., 3 indicates aid provided)
 
                 # Apply the impact on states for A (Economic aid)
                 action_impacts[columns_X.index('A Public Trust')] += 0.05
@@ -228,6 +228,31 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('B Public Trust')] += 0.1
                 action_impacts[columns_X.index('B Political Stability')] += 0.03
                 action_impacts[columns_X.index('B Trade Balance')] += 0.05
+
+
+        elif action == 'A Military Activity':  # Displaying military power (new action)
+            # Extract parameters for military display calculation
+            a_military_power = current_values['A Military Power']
+            b_political_stability = current_values['B Political Stability']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A displaying military power
+            military_display_probability = 0.3 + 0.05 * (a_military_power - 700) - 0.1 * (b_political_stability - 7) + 0.2 * (1 - political_similarity)
+            random_value = np.random.random()
+
+            if random_value < military_display_probability:
+                row_actions[j] += 3  # Action taken (3 indicates action for displaying military power)
+                
+                # Apply the impact on states for A (Military power)
+                action_impacts[columns_X.index('A Military Power')] += 0.05  # Increase A's military power
+                action_impacts[columns_X.index('A Government Spending')] += 0.05  # Government spending could rise for military display
+
+                # Apply the impact on states for B (Military impact)
+                action_impacts[columns_X.index('B Political Stability')] -= 0.05  # Decrease B's political stability due to military show of force
+
+        else:
+            row_actions[j] += 0  # Default to 0 if the action isn't defined yet
+
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
