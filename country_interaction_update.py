@@ -156,6 +156,8 @@ for i in range(1, number_rows):
         if action == 'A Major Political Actions':  # Public Declaration of Support or Opposition
             a_public_trust = current_values['A Public Trust']
             a_political_stability = current_values['A Political Stability']
+            a_unemployment_rate = current_values['A Unemployment Rate']
+            a_bilateral_diplomatic_relations_opposition = current_values['A to B Exports'] - current_values['A to B Imports']
 
             # Calculate A's support action (Public Declaration of Support)
             a_bilateral_diplomatic_relations_support = current_values['Ethnic Similarity']
@@ -170,8 +172,6 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('A Trade Balance')] += 0.03
 
             # Calculate A's opposition action (A Opposes B)
-            a_unemployment_rate = current_values['A Unemployment Rate']
-            a_bilateral_diplomatic_relations_opposition = current_values['A to B Exports'] - current_values['A to B Imports']
             opposition_probability = 0.3 + 0.05 * (a_unemployment_rate - 8) - 0.1 * a_bilateral_diplomatic_relations_opposition
             random_value = np.random.random()
 
@@ -186,6 +186,9 @@ for i in range(1, number_rows):
             a_trade_balance = current_values['A Trade Balance']
             a_unemployment_rate = current_values['A Unemployment Rate']
             a_bilateral_diplomatic_relations = current_values['A to B Exports'] - current_values['A to B Imports']
+            a_gdp = current_values['A GDP']
+            b_unemployment_rate = current_values['B Unemployment Rate']
+            political_similarity = current_values['Political Similarity']
 
             # Read Political Similarity from current state
             a_political_similarity = current_values['Political Similarity']  # Added Political Similarity
@@ -206,11 +209,6 @@ for i in range(1, number_rows):
                     action_impacts[columns_X.index('B Public Trust')] -= 0.05
                     action_impacts[columns_X.index('B Political Stability')] -= 0.02
                     action_impacts[columns_X.index('B Trade Balance')] += 0.05
-
-            # Extract parameters for economic aid calculation
-            a_gdp = current_values['A GDP']
-            b_unemployment_rate = current_values['B Unemployment Rate']
-            political_similarity = current_values['Political Similarity']
 
             # Calculate the probability of providing economic aid
             aid_probability = 0.2 + 0.05 * (a_gdp - 10000) - 0.05 * (b_unemployment_rate - 5) + 0.1 * political_similarity
@@ -235,13 +233,14 @@ for i in range(1, number_rows):
             a_military_power = current_values['A Military Power']
             b_political_stability = current_values['B Political Stability']
             political_similarity = current_values['Political Similarity']
+            b_military_power = current_values['B Military Power']
 
             # Calculate the probability of A displaying military power
             military_display_probability = 0.3 + 0.05 * (a_military_power - 700) - 0.1 * (b_political_stability - 7) + 0.2 * (1 - political_similarity)
             random_value = np.random.random()
 
             if random_value < military_display_probability:
-                row_actions[j] += 3  # Action taken (3 indicates action for displaying military power)
+                row_actions[j] += -5  # Action taken (3 indicates action for displaying military power)
                 
                 # Apply the impact on states for A (Military power)
                 action_impacts[columns_X.index('A Military Power')] += 0.05  # Increase A's military power
@@ -249,6 +248,17 @@ for i in range(1, number_rows):
 
                 # Apply the impact on states for B (Military impact)
                 action_impacts[columns_X.index('B Political Stability')] -= 0.05  # Decrease B's political stability due to military show of force
+
+            # Calculate the probability of A conducting a military exercise near B
+            military_exercise_probability = 0.3 + 0.1 * (a_military_power - 800) - 0.2 * (b_military_power - 1000) + 0.3 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < military_exercise_probability:
+                row_actions[j] += -4  # Positive action for military exercise (e.g., 3 indicates exercise near B)
+                # Apply the impact on states
+                action_impacts[columns_X.index('A Military Power')] += 0.05  # Increase A's military trust
+                action_impacts[columns_X.index('B Political Stability')] -= 0.1  # Decrease B's political stability
+                action_impacts[columns_X.index('B Military Power')] -= 0.1  # Decrease B's military power (if threatened)
 
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
