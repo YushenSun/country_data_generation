@@ -51,13 +51,14 @@ data_actions.loc[0] = first_row_actions  # Add first row of actions
 
 # Initialize the starting values for each parameter based on realistic data (for example, as of 2025)
 # Initialize the starting values for each parameter based on realistic data (with adjustments to increase action probabilities)
+# Initialize the starting values for each parameter based on realistic data (with adjustments to increase action probabilities)
 initial_values = {
     'A Public Trust': 80.0,  # Increased Public Trust to increase the probability of actions like support
     'A Political Stability': 8.0,  # Increased Political Stability to increase the likelihood of political actions
     'Political Similarity': 0.8,  # Increased political similarity to improve relations with B and make support more likely
     'A Trade Balance': -10*100,  # Decreased Trade Balance (increase trade deficit to increase probability of sanctions)
-    'A GDP': 10000, 
-    'A Unemployment Rate': 8.5*10,  # Increased Unemployment Rate to make actions like opposition and sanctions more likely
+    'A GDP': 15000,  # Increased A's GDP to make economic aid more likely
+    'A Unemployment Rate': 6.0,  # Slightly reduced Unemployment Rate to keep A's economy healthy
     'A Inflation Rate': 3.0, 
     'A Foreign Debt': 300, 
     'A Government Spending': 800,
@@ -86,7 +87,7 @@ initial_values = {
     'A Global Trade Index': 0.6,
     
     'B GDP': 12000, 
-    'B Unemployment Rate': 5.5, 
+    'B Unemployment Rate': 8.5,  # Increased B's Unemployment Rate to make aid more likely
     'B Inflation Rate': 2.0, 
     'B Foreign Debt': 400, 
     'B Government Spending': 1000,
@@ -125,11 +126,9 @@ initial_values = {
     'B Bond Status': 1, 
     'A Sovereignty Disputes': 0, 
     'B Sovereignty Disputes': 0,
-    'Political Similarity':0.3,
     'Ethnic Similarity': 0.5, 
     'Cultural Compatibility': 0.7
 }
-
 
 # Generate state data and actions row by row
 current_values = initial_values.copy()
@@ -143,6 +142,8 @@ M[action_columns.index('A Major Political Actions')][columns_X.index('A Politica
 M[action_columns.index('A Major Political Actions')][columns_X.index('A Trade Balance')] = 0.03  # A Major Political Actions increases A Trade Balance
 
 # Generate the first row of actions and states
+# For each action, calculate its value based on the current state values (from the previous row)
+# Generate state data and actions row by row
 for i in range(1, number_rows):
     row_actions = [0] * len(action_columns)  # Initialize the row actions to zero for each action
     row_state = []  # Initialize a list for the state values
@@ -200,10 +201,33 @@ for i in range(1, number_rows):
                     # Apply the impact on states (e.g., a decrease in public trust, economic stability, etc.)
                     action_impacts[columns_X.index('A Public Trust')] -= 0.1
                     action_impacts[columns_X.index('A Political Stability')] -= 0.05
-                    action_impacts[columns_X.index('A Trade Balance')] -= 0.05  # Trade balance might worsen due to sanctions
+                    action_impacts[columns_X.index('A Trade Balance')] -= 0.05
+                    # Apply the impact on states for B
+                    action_impacts[columns_X.index('B Public Trust')] -= 0.05
+                    action_impacts[columns_X.index('B Political Stability')] -= 0.02
+                    action_impacts[columns_X.index('B Trade Balance')] += 0.05
 
-        else:
-            row_actions[j] += 0  # Default to 0 if the action isn't defined yet
+            # Extract parameters for economic aid calculation
+            a_gdp = current_values['A GDP']
+            b_unemployment_rate = current_values['B Unemployment Rate']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of providing economic aid
+            aid_probability = 0.2 + 0.05 * (a_gdp - 10000) - 0.05 * (b_unemployment_rate - 5) + 0.1 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < aid_probability:
+                row_actions[j] += 3  # Positive action for economic aid (e.g., 3 indicates aid provided)
+
+                # Apply the impact on states for A (Economic aid)
+                action_impacts[columns_X.index('A Public Trust')] += 0.05
+                action_impacts[columns_X.index('A Political Stability')] += 0.02
+                action_impacts[columns_X.index('A Trade Balance')] -= 0.05  # Could worsen A's trade balance if aid is cash flow out
+
+                # Apply the impact on states for B (Economic aid)
+                action_impacts[columns_X.index('B Public Trust')] += 0.1
+                action_impacts[columns_X.index('B Political Stability')] += 0.03
+                action_impacts[columns_X.index('B Trade Balance')] += 0.05
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
