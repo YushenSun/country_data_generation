@@ -327,6 +327,66 @@ for i in range(1, number_rows):
                     action_impacts[columns_X.index('B Political Stability')] -= 0.1  # B's political stability could decrease
                     action_impacts[columns_X.index('B Military Power')] -= 0.1  # B's military power could decrease as a result of sanctions
 
+        elif action == 'A Environmental and Energy Policy':  # A takes environmental policy action with B
+            # Extract parameters for the environmental policy action calculation
+            a_environment_spending = current_values['A Environment Spending']
+            b_environment_spending = current_values['B Environment Spending']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A taking environmental policy action with B
+            policy_probability = 0.3 + 0.05 * (a_environment_spending - 30) + 0.1 * (b_environment_spending - 40) + 0.15 * (political_similarity - 0.5)
+            random_value = np.random.random()
+
+            if random_value < policy_probability:
+                row_actions[j] += 4  # Positive action for environmental policy cooperation
+
+                # Apply the impact on states for A (Environmental policy)
+                action_impacts[columns_X.index('A Environment Spending')] += 0.05  # Increase A's environmental spending
+                action_impacts[columns_X.index('A Environmental Quality')] += 0.1  # Improve A's environmental quality
+
+                # Apply the impact on states for B (Environmental cooperation)
+                action_impacts[columns_X.index('B Environment Spending')] += 0.05  # Increase B's environmental spending
+                action_impacts[columns_X.index('B Environmental Quality')] += 0.1  # Improve B's environmental quality
+            
+            # Extract parameters for the energy consumption and collaboration action calculation
+            a_energy_consumption = current_values['A Energy Consumption']
+            b_energy_production = current_values['B Energy Production']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A increasing energy consumption and collaborating with B
+            energy_cooperation_probability = 0.3 + 0.05 * (a_energy_consumption - 850) + 0.1 * (b_energy_production - 1000) + 0.2 * (political_similarity - 0.5)
+            random_value = np.random.random()
+
+            if random_value < energy_cooperation_probability:
+                row_actions[j] += 2  # Positive action for increasing energy consumption and collaborating with B
+
+                # Apply the impact on states for A (Energy consumption)
+                action_impacts[columns_X.index('A Energy Consumption')] += 0.05  # Increase A's energy consumption
+                action_impacts[columns_X.index('A Energy Production')] += 0.02  # A might increase its energy production to support the consumption increase
+
+                # Apply the impact on states for B (Energy cooperation)
+                action_impacts[columns_X.index('B Energy Consumption')] += 0.03  # B's energy consumption might rise due to cooperation
+                action_impacts[columns_X.index('B Energy Production')] += 0.05  # B may increase energy production as part of cooperation
+
+            # Extract parameters for the environmental restriction action calculation
+            a_energy_consumption = current_values['A Energy Consumption']
+            a_to_b_exports = current_values['A to B Exports']
+            a_environment_spending = current_values['A Environment Spending']
+
+            # Calculate the probability of A implementing environmental measures and restricting energy exports to B
+            environmental_restriction_probability = 0.3 + 0.05 * (a_energy_consumption - 850) - 0.1 * (a_to_b_exports - 150) + 0.2 * (a_environment_spending - 30)
+            random_value = np.random.random()
+
+            if random_value < environmental_restriction_probability:
+                row_actions[j] += -4  # Negative action for restricting energy exports to B (e.g., -4 indicates restriction)
+
+                # Apply the impact on states for A (Energy policy)
+                action_impacts[columns_X.index('A Energy Consumption')] -= 0.05  # A may reduce energy consumption as part of the restriction
+                action_impacts[columns_X.index('A Environmental Quality')] += 0.1  # A's environmental quality could improve with the policy
+
+                # Apply the impact on states for B (Energy exports restriction)
+                action_impacts[columns_X.index('B Energy Consumption')] -= 0.05  # B's energy consumption might decrease due to the restriction
+                action_impacts[columns_X.index('B Trade Balance')] -= 0.03  # B's trade balance could worsen due to restricted energy imports
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
 
