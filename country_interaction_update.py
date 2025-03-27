@@ -14,7 +14,7 @@ columns_X = [
     'A Human Development Index', 'A Public Trust', 'A Freedom of Press', 'A Corruption Index',
     'A Military Power', 'A Alliances', 'A Environmental Quality', 'A Natural Resources Availability',
     'A Trade Balance', 'A Public Health', 'A Democracy Index', 'A Technology Adoption Rate',
-    'A Cultural Influence', 'A Global Trade Index', 'A Innovation Index',
+    'A Cultural Influence', 'A Global Trade Index', 'A Innovation Index', 'A Social Welfare Spending', 'A Social Security Reform','A Social Welfare',
 
     # B state parameters
     'B GDP', 'B Unemployment Rate', 'B Inflation Rate', 'B Foreign Debt',
@@ -25,7 +25,7 @@ columns_X = [
     'B Human Development Index', 'B Public Trust', 'B Freedom of Press', 'B Corruption Index',
     'B Military Power', 'B Alliances', 'B Environmental Quality', 'B Natural Resources Availability',
     'B Trade Balance', 'B Public Health', 'B Democracy Index', 'B Technology Adoption Rate',
-    'B Cultural Influence', 'B Global Trade Index', 'B Innovation Index',
+    'B Cultural Influence', 'B Global Trade Index', 'B Innovation Index', 'B Social Welfare Spending', 'B Social Security Reform', 'B Social Welfare',
 
     # Relationship Parameters
     'A to B Imports', 'A to B Exports', 'B to A Imports', 'B to A Exports',
@@ -86,6 +86,9 @@ initial_values = {
     'A Cultural Influence': 40.0, 
     'A Global Trade Index': 0.6,
     'A Innovation Index': 0.5,  # New added parameter for A's innovation level
+    'A Social Welfare Spending': 100,  # New added parameter for A's social welfare spending
+    'A Social Security Reform':1,
+    'A Social Welfare':100,
 
     'B GDP': 12000, 
     'B Unemployment Rate': 8.5,  # Increased B's Unemployment Rate to make aid more likely
@@ -119,6 +122,9 @@ initial_values = {
     'B Cultural Influence': 60.0, 
     'B Global Trade Index': 0.8,
     'B Innovation Index': 0.5,  # New added parameter for A's innovation level
+    'B Social Welfare Spending': 100,  # New added parameter for B's social welfare spending
+    'B Social Security Reform':1,
+    'B Social Welfare':100,
     
     'A to B Imports': 200, 
     'A to B Exports': 150, 
@@ -494,6 +500,48 @@ for i in range(1, number_rows):
                 # Apply the impact on states for B (Due to lack of medical supplies)
                 action_impacts[columns_X.index('B Public Health')] -= 0.1  # B's public health should decrease due to the shortage of medical supplies
                 action_impacts[columns_X.index('B Political Stability')] -= 0.03  # B's political stability might decrease due to lack of aid
+
+        elif action == 'A Social Policy and Welfare Reform':  # A initiates Social Policy and Welfare Reform, benefiting B
+            # Extract parameters for social welfare reform calculation
+            a_social_welfare_spending = current_values['A Social Welfare Spending']
+            a_social_security_reform = current_values['A Social Security Reform']
+            b_social_welfare = current_values['B Social Welfare']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A implementing social policy and welfare reform
+            social_policy_probability = 0.3 + 0.05 * (a_social_welfare_spending - 100) + 0.1 * (a_social_security_reform - 50) + 0.2 * political_similarity - 0.1 * b_social_welfare
+            random_value = np.random.random()
+
+            if random_value < social_policy_probability:
+                row_actions[j] += 3  # Positive action for social policy and welfare reform (e.g., 3 indicates support provided)
+
+                # Apply the impact on states for A (Social policy)
+                action_impacts[columns_X.index('A Social Welfare Spending')] += 0.1  # A's social welfare spending increases
+                action_impacts[columns_X.index('A Social Security Reform')] += 0.05  # A's social security reform improves
+                action_impacts[columns_X.index('A Public Trust')] += 0.05  # A's public trust might increase due to the welfare reform
+
+                # Apply the impact on states for B (Benefiting from A's social reform)
+                action_impacts[columns_X.index('B Social Welfare')] += 0.1  # B's social welfare improves from cooperation
+                action_impacts[columns_X.index('B Political Stability')] += 0.03  # B's political stability improves as a result of the welfare cooperation
+
+            # Extract parameters for the case where A does not perform the welfare reform (if this action is negated)
+            a_social_welfare_spending = current_values['A Social Welfare Spending']
+            b_social_welfare = current_values['B Social Welfare']
+
+            # Calculate the probability of A not implementing welfare reform
+            social_reform_negation_probability = 0.2 + 0.05 * (a_social_welfare_spending - 100) - 0.1 * (b_social_welfare - 50)
+            random_value = np.random.random()
+
+            if random_value < social_reform_negation_probability:
+                row_actions[j] += -3  # Negative action for failing to reform or withdrawing support
+
+                # Apply the impact on states for A (Negative impact)
+                action_impacts[columns_X.index('A Social Welfare Spending')] -= 0.1  # A's social welfare spending decreases
+                action_impacts[columns_X.index('A Public Trust')] -= 0.05  # A's public trust might decrease due to the failure
+
+                # Apply the impact on states for B (Negative impact)
+                action_impacts[columns_X.index('B Social Welfare')] -= 0.1  # B's social welfare decreases due to the lack of cooperation
+                action_impacts[columns_X.index('B Political Stability')] -= 0.05  # B's political stability decreases due to the broken cooperation
 
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
