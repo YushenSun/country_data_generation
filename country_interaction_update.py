@@ -302,6 +302,31 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('B Trade Balance')] += 0.05  # Trade balance might improve for B
                 action_impacts[columns_X.index('B Military Spending')] -= 0.05  # B's military spending might decrease as a result of peace
 
+
+            # Extract parameters for international sanctions calculation
+            a_unemployment_rate = current_values['A Unemployment Rate']
+            a_bilateral_diplomatic_relations = current_values['Political Similarity']  # This represents the diplomatic relation between A and B
+            a_trade_balance = current_values['A to B Exports'] - current_values['A to B Imports']  # Economic cooperation index
+
+            # Check if the conditions for participating in international sanctions are met
+            if a_bilateral_diplomatic_relations < 0.5 and a_unemployment_rate > 8 and a_trade_balance < 0:
+                # Calculate the probability of participating in sanctions
+                sanction_probability = 0.3 + 0.05 * (a_unemployment_rate - 8) - 0.1 * a_trade_balance - 0.2 * (1 - a_bilateral_diplomatic_relations)
+                random_value = np.random.random()
+
+                if random_value < sanction_probability:
+                    row_actions[j] += -6  # Negative action indicating participation in sanctions (e.g., -6 indicates sanctions)
+
+                    # Apply the impact on states for A (International sanctions)
+                    action_impacts[columns_X.index('A Public Trust')] -= 0.1  # Public trust in A could decrease due to sanctions
+                    action_impacts[columns_X.index('A Political Stability')] -= 0.05  # Political stability in A might decrease due to sanctions
+                    action_impacts[columns_X.index('A Trade Balance')] -= 0.05  # Trade balance could worsen as a result of sanctions
+
+                    # Apply the impact on states for B (Sanctions impact)
+                    action_impacts[columns_X.index('B Public Trust')] -= 0.15  # Public trust in B might decrease due to sanctions
+                    action_impacts[columns_X.index('B Political Stability')] -= 0.1  # B's political stability could decrease
+                    action_impacts[columns_X.index('B Military Power')] -= 0.1  # B's military power could decrease as a result of sanctions
+
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
 
