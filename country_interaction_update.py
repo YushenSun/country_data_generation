@@ -387,6 +387,69 @@ for i in range(1, number_rows):
                 # Apply the impact on states for B (Energy exports restriction)
                 action_impacts[columns_X.index('B Energy Consumption')] -= 0.05  # B's energy consumption might decrease due to the restriction
                 action_impacts[columns_X.index('B Trade Balance')] -= 0.03  # B's trade balance could worsen due to restricted energy imports
+
+        elif action == 'A Technology and Innovation Strategy':  # A Shares Technology with B
+            # Extract parameters for technology sharing calculation
+            a_technology_investment = current_values['A Technology Investment']
+            a_innovation_index = current_values['A Innovation Index']
+            political_similarity = current_values['Political Similarity']  # Political cooperation between A and B
+            
+            # Calculate the probability of sharing technology with B
+            tech_sharing_probability = 0.3 + 0.05 * (a_technology_investment - 250) + 0.1 * (a_innovation_index - 50) + 0.2 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < tech_sharing_probability:
+                row_actions[j] += 4  # Positive action (3 indicates technology sharing with B)
+                
+                # Apply the impact on states for A (Technology Sharing)
+                action_impacts[columns_X.index('A Technology Investment')] += 0.05  # Technology investment might increase due to shared knowledge
+                action_impacts[columns_X.index('A Innovation Index')] += 0.05  # Innovation index might rise as a result of sharing
+
+                # Apply the impact on states for B (Technology Sharing)
+                action_impacts[columns_X.index('B Technology Adoption Rate')] += 0.05  # B's technology adoption might increase
+                action_impacts[columns_X.index('B Technology Investment')] += 0.03  # B's technology investment might rise due to shared knowledge
+
+            # Extract parameters for technology competition calculation
+            a_technology_investment = current_values['A Technology Investment']
+            a_innovation_index = current_values['A Innovation Index']
+            b_technology_investment = current_values['B Technology Investment']  # B's technology investment
+            
+            # Calculate the probability of A competing with B in the technology field
+            tech_competition_probability = 0.4 + 0.05 * (a_technology_investment - 250) + 0.1 * (a_innovation_index - 50) - 0.15 * (b_technology_investment - 280)
+            random_value = np.random.random()
+
+            if random_value < tech_competition_probability:
+                row_actions[j] += -4  # Negative action (indicates competition, -4 represents A's active competition with B in technology)
+                
+                # Apply the impact on states for A (Competition)
+                action_impacts[columns_X.index('A Technology Investment')] += 0.05  # A's technology investment might increase as a result of competition
+                action_impacts[columns_X.index('A Innovation Index')] += 0.05  # Innovation index might rise as a result of competition
+                action_impacts[columns_X.index('A Military Spending')] += 0.03  # Competition may drive more military spending as a countermeasure
+
+                # Apply the impact on states for B (Competition)
+                action_impacts[columns_X.index('B Technology Investment')] -= 0.05  # B's technology investment might decline due to increased competition
+                action_impacts[columns_X.index('B Innovation Index')] -= 0.05  # B's innovation index might be impacted
+
+            # Extract parameters for technology export restriction calculation
+            a_technology_investment = current_values['A Technology Investment']
+            b_technology_investment = current_values['B Technology Investment']
+            a_political_stability = current_values['A Political Stability']
+
+            # Calculate the probability of A restricting technology exports to B
+            tech_export_restriction_probability = 0.3 + 0.1 * (a_technology_investment - 300) - 0.1 * (b_technology_investment - 280) - 0.2 * (a_political_stability - 6.5)
+            random_value = np.random.random()
+
+            if random_value < tech_export_restriction_probability:
+                row_actions[j] += -5  # Negative action (-5 indicates action for restricting exports)
+
+                # Apply the impact on states for A (Restricting exports)
+                action_impacts[columns_X.index('A Technology Investment')] -= 0.1  # A's technology investment might be impacted by restrictions
+                action_impacts[columns_X.index('A Government Spending')] += 0.05  # Possible increase in government spending to maintain control
+
+                # Apply the impact on states for B (Restrictions)
+                action_impacts[columns_X.index('B Technology Investment')] -= 0.1  # B's technology investment might decrease due to lack of access to A's technology
+                action_impacts[columns_X.index('B Innovation Index')] -= 0.05  # B's innovation index could be impacted by technology restrictions
+
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
 
