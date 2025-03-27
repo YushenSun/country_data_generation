@@ -14,7 +14,7 @@ columns_X = [
     'A Human Development Index', 'A Public Trust', 'A Freedom of Press', 'A Corruption Index',
     'A Military Power', 'A Alliances', 'A Environmental Quality', 'A Natural Resources Availability',
     'A Trade Balance', 'A Public Health', 'A Democracy Index', 'A Technology Adoption Rate',
-    'A Cultural Influence', 'A Global Trade Index',
+    'A Cultural Influence', 'A Global Trade Index', 'A Innovation Index',
 
     # B state parameters
     'B GDP', 'B Unemployment Rate', 'B Inflation Rate', 'B Foreign Debt',
@@ -25,7 +25,7 @@ columns_X = [
     'B Human Development Index', 'B Public Trust', 'B Freedom of Press', 'B Corruption Index',
     'B Military Power', 'B Alliances', 'B Environmental Quality', 'B Natural Resources Availability',
     'B Trade Balance', 'B Public Health', 'B Democracy Index', 'B Technology Adoption Rate',
-    'B Cultural Influence', 'B Global Trade Index',
+    'B Cultural Influence', 'B Global Trade Index', 'B Innovation Index',
 
     # Relationship Parameters
     'A to B Imports', 'A to B Exports', 'B to A Imports', 'B to A Exports',
@@ -52,17 +52,17 @@ data_actions.loc[0] = first_row_actions  # Add first row of actions
 # Initialize the starting values for each parameter based on realistic data (for example, as of 2025)
 # Initialize the starting values for each parameter based on realistic data (with adjustments to increase action probabilities)
 # Initialize the starting values for each parameter based on realistic data (with adjustments to increase action probabilities)
+# Initialize the starting values for each parameter based on realistic data
 initial_values = {
     'A Public Trust': 80.0,  # Increased Public Trust to increase the probability of actions like support
     'A Political Stability': 8.0,  # Increased Political Stability to increase the likelihood of political actions
-    'Political Similarity': 0.8,  # Increased political similarity to improve relations with B and make support more likely
     'A Trade Balance': -10*100,  # Decreased Trade Balance (increase trade deficit to increase probability of sanctions)
     'A GDP': 15000,  # Increased A's GDP to make economic aid more likely
     'A Unemployment Rate': 6.0,  # Slightly reduced Unemployment Rate to keep A's economy healthy
     'A Inflation Rate': 3.0, 
     'A Foreign Debt': 300, 
     'A Government Spending': 800,
-    'A Military Spending': 150*10, 
+    'A Military Spending': 150, 
     'A Education Spending': 70, 
     'A Health Spending': 120, 
     'A Environment Spending': 30, 
@@ -85,7 +85,8 @@ initial_values = {
     'A Technology Adoption Rate': 0.5, 
     'A Cultural Influence': 40.0, 
     'A Global Trade Index': 0.6,
-    
+    'A Innovation Index': 0.5,  # New added parameter for A's innovation level
+
     'B GDP': 12000, 
     'B Unemployment Rate': 8.5,  # Increased B's Unemployment Rate to make aid more likely
     'B Inflation Rate': 2.0, 
@@ -117,6 +118,7 @@ initial_values = {
     'B Technology Adoption Rate': 0.7, 
     'B Cultural Influence': 60.0, 
     'B Global Trade Index': 0.8,
+    'B Innovation Index': 0.5,  # New added parameter for A's innovation level
     
     'A to B Imports': 200, 
     'A to B Exports': 150, 
@@ -127,8 +129,10 @@ initial_values = {
     'A Sovereignty Disputes': 0, 
     'B Sovereignty Disputes': 0,
     'Ethnic Similarity': 0.5, 
-    'Cultural Compatibility': 0.7
+    'Cultural Compatibility': 0.7,
+    'Political Similarity': 0.8  # Increased political similarity to improve relations with B and make support more likely
 }
+
 
 # Generate state data and actions row by row
 current_values = initial_values.copy()
@@ -449,6 +453,47 @@ for i in range(1, number_rows):
                 # Apply the impact on states for B (Restrictions)
                 action_impacts[columns_X.index('B Technology Investment')] -= 0.1  # B's technology investment might decrease due to lack of access to A's technology
                 action_impacts[columns_X.index('B Innovation Index')] -= 0.05  # B's innovation index could be impacted by technology restrictions
+
+        elif action == 'A Public Health and Safety Policy':  # Providing public health support to B
+            # Extract parameters for public health support calculation
+            a_public_health = current_values['A Public Health']
+            b_public_health = current_values['B Public Health']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A providing public health support to B
+            health_support_probability = 0.3 + 0.1 * (a_public_health - 70) - 0.1 * (b_public_health - 60) + 0.2 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < health_support_probability:
+                row_actions[j] += 3  # Positive action for providing public health support (e.g., 3 indicates support provided)
+                
+                # Apply the impact on states for A (Public Health support)
+                action_impacts[columns_X.index('A Public Trust')] += 0.05  # A's public trust might increase due to aid
+                action_impacts[columns_X.index('A Political Stability')] += 0.03  # A's stability might improve due to goodwill with B
+
+                # Apply the impact on states for B (Public Health support)
+                action_impacts[columns_X.index('B Public Health')] += 0.1  # B's public health should improve due to aid
+                action_impacts[columns_X.index('B Political Stability')] += 0.02  # B's political stability might improve from the support
+
+            # Extract parameters for medical supply restriction calculation
+            a_public_health = current_values['A Public Health']
+            b_public_health = current_values['B Public Health']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of A restricting medical supplies to B
+            supply_restriction_probability = 0.3 + 0.05 * (a_public_health - 70) - 0.1 * (b_public_health - 60) - 0.2 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < supply_restriction_probability:
+                row_actions[j] += -3  # Negative action for restricting medical supplies (e.g., -3 indicates restriction)
+                
+                # Apply the impact on states for A (Restricting supplies)
+                action_impacts[columns_X.index('A Public Trust')] -= 0.05  # A's public trust might decrease due to restrictions
+                action_impacts[columns_X.index('A Political Stability')] -= 0.02  # A's stability might decrease due to tensions
+
+                # Apply the impact on states for B (Due to lack of medical supplies)
+                action_impacts[columns_X.index('B Public Health')] -= 0.1  # B's public health should decrease due to the shortage of medical supplies
+                action_impacts[columns_X.index('B Political Stability')] -= 0.03  # B's political stability might decrease due to lack of aid
 
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
