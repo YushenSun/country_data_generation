@@ -62,7 +62,7 @@ initial_values = {
     'A Inflation Rate': 3.0, 
     'A Foreign Debt': 300, 
     'A Government Spending': 800,
-    'A Military Spending': 150, 
+    'A Military Spending': 150*10, 
     'A Education Spending': 70, 
     'A Health Spending': 120, 
     'A Environment Spending': 30, 
@@ -227,13 +227,14 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('B Political Stability')] += 0.03
                 action_impacts[columns_X.index('B Trade Balance')] += 0.05
 
-
         elif action == 'A Military Activity':  # Displaying military power (new action)
             # Extract parameters for military display calculation
             a_military_power = current_values['A Military Power']
             b_political_stability = current_values['B Political Stability']
             political_similarity = current_values['Political Similarity']
             b_military_power = current_values['B Military Power']
+            a_military_spending = current_values['A Military Spending']
+            a_political_stability = current_values['A Political Stability']
 
             # Calculate the probability of A displaying military power
             military_display_probability = 0.3 + 0.05 * (a_military_power - 700) - 0.1 * (b_political_stability - 7) + 0.2 * (1 - political_similarity)
@@ -260,9 +261,49 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('B Political Stability')] -= 0.1  # Decrease B's political stability
                 action_impacts[columns_X.index('B Military Power')] -= 0.1  # Decrease B's military power (if threatened)
 
+            # Calculate the probability of A engaging in military conflict with B
+            military_conflict_probability = 0.2 + 0.1 * (a_military_power - 1000) - 0.2 * (political_similarity) + 0.1 * (a_military_spending - 200)
+            random_value = np.random.random()
+
+            if random_value < military_conflict_probability:
+                row_actions[j] += -6  # Negative action indicating military conflict (-6 for military conflict)
+
+                # Apply the impact on states for A
+                action_impacts[columns_X.index('A Military Power')] += 0.1  # Military power increases due to conflict preparation
+                action_impacts[columns_X.index('A Political Stability')] -= 0.1  # Political stability may decrease due to the conflict
+
+                # Apply the impact on states for B
+                action_impacts[columns_X.index('B Political Stability')] -= 0.2  # Decrease B's political stability as a result of conflict
+                action_impacts[columns_X.index('B Military Power')] -= 0.15  # Decrease B's military power due to conflict engagement
+
+
+        elif action == 'A Diplomatic Policy Change':  # Peace Agreement (new action)
+            # Extract parameters for peace agreement calculation
+            a_political_stability = current_values['A Political Stability']
+            b_political_stability = current_values['B Political Stability']
+            a_military_power = current_values['A Military Power']
+            b_military_power = current_values['B Military Power']
+            political_similarity = current_values['Political Similarity']
+
+            # Calculate the probability of signing a peace agreement
+            peace_probability = 0.4 + 0.1 * (a_political_stability - 6) - 0.05 * (a_military_power - b_military_power) + 0.2 * political_similarity
+            random_value = np.random.random()
+
+            if random_value < peace_probability:
+                row_actions[j] += 6  # Positive action for peace agreement (e.g., 4 indicates peace agreement signed)
+                
+                # Apply the impact on states for A (Positive impact due to peace agreement)
+                action_impacts[columns_X.index('A Political Stability')] += 0.1  # Increased political stability
+                action_impacts[columns_X.index('A Trade Balance')] += 0.05  # Trade balance might improve
+                action_impacts[columns_X.index('A Military Spending')] -= 0.05  # Military spending might decrease as a result of peace
+
+                # Apply the impact on states for B (Positive impact due to peace agreement)
+                action_impacts[columns_X.index('B Political Stability')] += 0.1  # Increased political stability for B
+                action_impacts[columns_X.index('B Trade Balance')] += 0.05  # Trade balance might improve for B
+                action_impacts[columns_X.index('B Military Spending')] -= 0.05  # B's military spending might decrease as a result of peace
+
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
-
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
