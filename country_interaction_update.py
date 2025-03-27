@@ -543,6 +543,32 @@ for i in range(1, number_rows):
                 action_impacts[columns_X.index('B Social Welfare')] -= 0.1  # B's social welfare decreases due to the lack of cooperation
                 action_impacts[columns_X.index('B Political Stability')] -= 0.05  # B's political stability decreases due to the broken cooperation
 
+            # Extract parameters for the social welfare reduction calculation
+            a_unemployment_rate = current_values['A Unemployment Rate']
+            political_similarity = current_values['Political Similarity']  # A to B political relations
+            
+            # Check if the conditions for reducing social welfare are met
+            if a_unemployment_rate > 8 and political_similarity < 0.5:
+                # Calculate the probability of reducing social welfare support
+                welfare_reduction_probability = 0.4 + 0.05 * (a_unemployment_rate - 8) - 0.2 * political_similarity
+                random_value = np.random.random()
+
+                if random_value < welfare_reduction_probability:
+                    row_actions[j] += -3  # Negative action for reducing social welfare (e.g., -3 indicates reduction)
+                    
+                    # Apply the impact on states for A (Social Welfare Reduction)
+                    action_impacts[columns_X.index('A Public Trust')] -= 0.1  # A's public trust could decrease due to social welfare cuts
+                    action_impacts[columns_X.index('A Political Stability')] -= 0.05  # A's political stability might decrease due to dissatisfaction
+                    action_impacts[columns_X.index('A Trade Balance')] -= 0.03  # A's trade balance might worsen due to reduced cooperation with B
+                    
+                    # Apply the impact on states for B (Reduction in cooperation)
+                    action_impacts[columns_X.index('B Public Trust')] -= 0.1  # B's public trust decreases due to the reduction in social welfare
+                    action_impacts[columns_X.index('B Political Stability')] -= 0.05  # B's political stability might decrease due to reduced cooperation
+                    action_impacts[columns_X.index('B Trade Balance')] -= 0.05  # B's trade balance might worsen due to A's reduced support
+
+            else:
+                row_actions[j] += 0  # Default to 0 if the conditions are not met
+
         else:
             row_actions[j] += 0  # Default to 0 if the action isn't defined yet
 
