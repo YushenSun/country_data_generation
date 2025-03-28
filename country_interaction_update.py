@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np 
 import pandas as pd
 
 number_rows = 522  # Number of rows you want
@@ -40,6 +40,57 @@ action_columns = [
     'B Major Political Actions', 'B Economic Policy Adjustment', 'B Military Activity', 'B Diplomatic Policy Change',
     'B Social Policy and Welfare Reform', 'B Environmental and Energy Policy', 'B Technology and Innovation Strategy', 'B Public Health and Safety Policy'
 ]
+
+# Define a function to handle political actions
+def major_political_actions(initiator, target, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Major Political Actions'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for initiator and target
+    initiator_public_trust = f'{initiator} Public Trust'
+    initiator_political_stability = f'{initiator} Political Stability'
+    initiator_unemployment_rate = f'{initiator} Unemployment Rate'
+    initiator_to_target_exports = f'{initiator} to {target} Exports'
+    initiator_to_target_imports = f'{initiator} to {target} Imports'
+    target_public_trust = f'{target} Public Trust'
+    target_political_stability = f'{target} Political Stability'
+    
+    # Calculate support action (Public Declaration of Support)
+    initiator_public_trust_value = current_values[initiator_public_trust]
+    initiator_political_stability_value = current_values[initiator_political_stability]
+    initiator_unemployment_rate_value = current_values[initiator_unemployment_rate]
+    initiator_bilateral_diplomatic_relations_opposition = current_values[initiator_to_target_exports] - current_values[initiator_to_target_imports]
+    initiator_bilateral_diplomatic_relations_support = current_values['Ethnic Similarity']
+    
+    support_probability = 0.3 + 0.05 * (initiator_public_trust_value - 60) + 0.1 * (initiator_political_stability_value - 6.5) + 0.2 * initiator_bilateral_diplomatic_relations_support
+    random_value = np.random.random()
+
+    if random_value < support_probability:
+        # Find the correct index of the action column dynamically
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 3  # Positive action for support
+        # Accumulate the impact on the state parameters
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.05
+        action_impacts[columns_X.index(f'{initiator} Trade Balance')] += 0.03
+
+    # Calculate opposition action (A Opposes B)
+    opposition_probability = 0.3 + 0.05 * (initiator_unemployment_rate_value - 8) - 0.1 * initiator_bilateral_diplomatic_relations_opposition
+    random_value = np.random.random()
+
+    if random_value < opposition_probability:
+        # Negative action for opposition
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = -4
+        # Accumulate the impact on the state parameters
+        action_impacts[columns_X.index(initiator_public_trust)] -= 0.05
+        action_impacts[columns_X.index(initiator_political_stability)] -= 0.02
+
+    return row_actions, action_impacts
 
 # Initialize an empty DataFrame for actions with columns and the appropriate number of rows
 data_actions = pd.DataFrame(columns=action_columns, index=range(number_rows))
@@ -139,17 +190,8 @@ initial_values = {
     'Political Similarity': 0.8  # Increased political similarity to improve relations with B and make support more likely
 }
 
-
 # Generate state data and actions row by row
 current_values = initial_values.copy()
-
-# Initialize the action impact matrix M (the coefficients that define the action effects on the states)
-M = np.zeros((len(action_columns), len(columns_X)))  # Number of actions x Number of states
-
-# Example: Set the matrix M for A Major Political Actions
-M[action_columns.index('A Major Political Actions')][columns_X.index('A Public Trust')] = 0.1  # A Major Political Actions increases A Public Trust
-M[action_columns.index('A Major Political Actions')][columns_X.index('A Political Stability')] = 0.05  # A Major Political Actions increases A Political Stability
-M[action_columns.index('A Major Political Actions')][columns_X.index('A Trade Balance')] = 0.03  # A Major Political Actions increases A Trade Balance
 
 # Generate the first row of actions and states
 # For each action, calculate its value based on the current state values (from the previous row)
@@ -163,35 +205,14 @@ for i in range(1, number_rows):
 
     # For each action, calculate its value based on the current state values (from the previous row)
     for j, action in enumerate(action_columns):
-        if action == 'A Major Political Actions':  # Public Declaration of Support or Opposition
-            a_public_trust = current_values['A Public Trust']
-            a_political_stability = current_values['A Political Stability']
-            a_unemployment_rate = current_values['A Unemployment Rate']
-            a_bilateral_diplomatic_relations_opposition = current_values['A to B Exports'] - current_values['A to B Imports']
+            # Example usage for both A and B using the same function
+            # Call the function for A's actions (initiator is A, target is B)
+        row_actions, action_impacts = major_political_actions('A', 'B', current_values, action_columns, row_actions, action_impacts)
 
-            # Calculate A's support action (Public Declaration of Support)
-            a_bilateral_diplomatic_relations_support = current_values['Ethnic Similarity']
-            support_probability = 0.3 + 0.05 * (a_public_trust - 60) + 0.1 * (a_political_stability - 6.5) + 0.2 * a_bilateral_diplomatic_relations_support
-            random_value = np.random.random()
+            # Call the function for B's actions (initiator is B, target is A)
+        row_actions, action_impacts = major_political_actions('B', 'A', current_values, action_columns, row_actions, action_impacts)
 
-            if random_value < support_probability:
-                row_actions[j] += 3  # Action taken (3 indicates action for support)
-                # Accumulate the impact on the state parameters
-                action_impacts[columns_X.index('A Public Trust')] += 0.1
-                action_impacts[columns_X.index('A Political Stability')] += 0.05
-                action_impacts[columns_X.index('A Trade Balance')] += 0.03
-
-            # Calculate A's opposition action (A Opposes B)
-            opposition_probability = 0.3 + 0.05 * (a_unemployment_rate - 8) - 0.1 * a_bilateral_diplomatic_relations_opposition
-            random_value = np.random.random()
-
-            if random_value < opposition_probability:
-                row_actions[j] += -4  # Action taken (negative action for opposition)
-                # Accumulate the impact on the state parameters
-                action_impacts[columns_X.index('A Public Trust')] -= 0.05
-                action_impacts[columns_X.index('A Political Stability')] -= 0.02
-
-        elif action == 'A Economic Policy Adjustment':  # Trade Sanctions (Trigger Condition and Formula)
+        if action == 'A Economic Policy Adjustment':  # Trade Sanctions (Trigger Condition and Formula)
             # Extract parameters for trade sanctions calculation
             a_trade_balance = current_values['A Trade Balance']
             a_unemployment_rate = current_values['A Unemployment Rate']
