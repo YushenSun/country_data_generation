@@ -679,22 +679,19 @@ for i in range(1, number_rows):
     # For each action, calculate its value based on the current state values (from the previous row)
     for j, action in enumerate(action_columns):
 
-        row_actions, action_impacts = major_political_actions('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = major_political_actions('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = economic_policy_adjustment('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = economic_policy_adjustment('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = military_activity('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = military_activity('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = diplomatic_policy_change('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = diplomatic_policy_change('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = social_policy_and_welfare_reform('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = social_policy_and_welfare_reform('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = environmental_and_energy_policy('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = environmental_and_energy_policy('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = technology_and_innovation_strategy('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = technology_and_innovation_strategy('B', 'A', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = public_health_and_safety_policy('A', 'B', current_values, action_columns, row_actions, action_impacts)
-        row_actions, action_impacts = public_health_and_safety_policy('B', 'A', current_values, action_columns, row_actions, action_impacts)
+        # List of initiators and targets        
+        pairs = [('A', 'B'), ('B', 'A')]
+
+        # Iterate over each pair and apply the corresponding action functions
+        for initiator, target in pairs:
+            row_actions, action_impacts = major_political_actions(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = economic_policy_adjustment(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = military_activity(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = diplomatic_policy_change(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = social_policy_and_welfare_reform(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = environmental_and_energy_policy(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = technology_and_innovation_strategy(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = public_health_and_safety_policy(initiator, target, current_values, action_columns, row_actions, action_impacts)
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
