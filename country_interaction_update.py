@@ -35,16 +35,20 @@ columns_X = [
 
 # Define the action columns for the dataframe (only current actions for A and B)
 action_columns = [
-    'A Major Political Actions', 'A Economic Policy Adjustment', 'A Military Activity', 'A Diplomatic Policy Change',
-    'A Social Policy and Welfare Reform', 'A Environmental and Energy Policy', 'A Technology and Innovation Strategy', 'A Public Health and Safety Policy',
-    'B Major Political Actions', 'B Economic Policy Adjustment', 'B Military Activity', 'B Diplomatic Policy Change',
-    'B Social Policy and Welfare Reform', 'B Environmental and Energy Policy', 'B Technology and Innovation Strategy', 'B Public Health and Safety Policy'
+    'A Political T', 'A Economic T', 'A Military T', 'A Diplomatic T',
+    'A Social T', 'A Environmental T', 'A Technology T', 'A Health T',
+    'B Political T', 'B Economic T', 'B Military T', 'B Diplomatic T',
+    'B Social T', 'B Environmental T', 'B Technology T', 'B Health T',
+    'A Political I', 'A Economic I', 'A Military I', 'A Diplomatic I',
+    'A Social I', 'A Environmental I', 'A Technology I', 'A Health I',
+    'B Political I', 'B Economic I', 'B Military I', 'B Diplomatic I',
+    'B Social I', 'B Environmental I', 'B Technology I', 'B Health I'
 ]
 
 # Define a function to handle political actions
-def major_political_actions(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def political_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Major Political Actions'
+    action_column = f'{initiator} Political T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -92,9 +96,9 @@ def major_political_actions(initiator, target, current_values, action_columns, r
 
     return row_actions, action_impacts
 
-def economic_policy_adjustment(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def economic_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Economic Policy Adjustment'
+    action_column = f'{initiator} Economic T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -154,9 +158,9 @@ def economic_policy_adjustment(initiator, target, current_values, action_columns
 
     return row_actions, action_impacts
 
-def military_activity(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def military_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Military Activity'
+    action_column = f'{initiator} Military T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -225,9 +229,9 @@ def military_activity(initiator, target, current_values, action_columns, row_act
 
     return row_actions, action_impacts
 
-def diplomatic_policy_change(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def diplomatic_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Diplomatic Policy Change'
+    action_column = f'{initiator} Diplomatic T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -290,9 +294,9 @@ def diplomatic_policy_change(initiator, target, current_values, action_columns, 
 
     return row_actions, action_impacts
 
-def social_policy_and_welfare_reform(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def social_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Social Policy and Welfare Reform'
+    action_column = f'{initiator} Social T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -317,7 +321,7 @@ def social_policy_and_welfare_reform(initiator, target, current_values, action_c
     if random_value < social_policy_probability:
         # Find the correct index of the action column dynamically
         action_index = action_columns.index(action_column)
-        row_actions[action_index] = 3  # Positive action for social policy and welfare reform
+        row_actions[action_index] = 3  # Positive action for Social T
         
         # Apply the impact on states for A (Social policy)
         action_impacts[columns_X.index(initiator_social_welfare_spending)] += 0.1  # A's social welfare spending increases
@@ -369,9 +373,9 @@ def social_policy_and_welfare_reform(initiator, target, current_values, action_c
 
     return row_actions, action_impacts
 
-def environmental_and_energy_policy(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def environmental_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Environmental and Energy Policy'
+    action_column = f'{initiator} Environmental T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -447,9 +451,9 @@ def environmental_and_energy_policy(initiator, target, current_values, action_co
 
     return row_actions, action_impacts
 
-def technology_and_innovation_strategy(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def technology_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Technology and Innovation Strategy'
+    action_column = f'{initiator} Technology T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -517,9 +521,9 @@ def technology_and_innovation_strategy(initiator, target, current_values, action
 
     return row_actions, action_impacts
 
-def public_health_and_safety_policy(initiator, target, current_values, action_columns, row_actions, action_impacts):
+def health_T(initiator, target, current_values, action_columns, row_actions, action_impacts):
     # Define the action column name dynamically based on initiator
-    action_column = f'{initiator} Public Health and Safety Policy'
+    action_column = f'{initiator} Health T'
 
     # Check if the action column exists in action_columns
     if action_column not in action_columns:
@@ -684,14 +688,14 @@ for i in range(1, number_rows):
 
         # Iterate over each pair and apply the corresponding action functions
         for initiator, target in pairs:
-            row_actions, action_impacts = major_political_actions(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = economic_policy_adjustment(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = military_activity(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = diplomatic_policy_change(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = social_policy_and_welfare_reform(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = environmental_and_energy_policy(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = technology_and_innovation_strategy(initiator, target, current_values, action_columns, row_actions, action_impacts)
-            row_actions, action_impacts = public_health_and_safety_policy(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = political_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = economic_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = military_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = diplomatic_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = social_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = environmental_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = technology_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = health_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
