@@ -14,7 +14,8 @@ columns_X = [
     'A Human Development Index', 'A Public Trust', 'A Freedom of Press', 'A Corruption Index',
     'A Military Power', 'A Alliances', 'A Environmental Quality', 'A Natural Resources Availability',
     'A Trade Balance', 'A Public Health', 'A Democracy Index', 'A Technology Adoption Rate',
-    'A Cultural Influence', 'A Global Trade Index', 'A Innovation Index', 'A Social Welfare Spending', 'A Social Security Reform','A Social Welfare',
+    'A Cultural Influence', 'A Global Trade Index', 'A Innovation Index', 'A Social Welfare Spending', 'A Social Security Reform','A Social Welfare', 'A Tax Rate',
+    'A National Security', 'A Financial Stability',
 
     # B state parameters
     'B GDP', 'B Unemployment Rate', 'B Inflation Rate', 'B Foreign Debt',
@@ -25,7 +26,8 @@ columns_X = [
     'B Human Development Index', 'B Public Trust', 'B Freedom of Press', 'B Corruption Index',
     'B Military Power', 'B Alliances', 'B Environmental Quality', 'B Natural Resources Availability',
     'B Trade Balance', 'B Public Health', 'B Democracy Index', 'B Technology Adoption Rate',
-    'B Cultural Influence', 'B Global Trade Index', 'B Innovation Index', 'B Social Welfare Spending', 'B Social Security Reform', 'B Social Welfare',
+    'B Cultural Influence', 'B Global Trade Index', 'B Innovation Index', 'B Social Welfare Spending', 'B Social Security Reform', 'B Social Welfare', 'B Tax Rate',
+    'B National Security', 'B Financial Stability',
 
     # Relationship Parameters
     'A to B Imports', 'A to B Exports', 'B to A Imports', 'B to A Exports',
@@ -571,6 +573,557 @@ def health_T(initiator, target, current_values, action_columns, row_actions, act
 
     return row_actions, action_impacts
 
+def political_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Political I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for initiator
+    initiator_public_trust = f'{initiator} Public Trust'
+    initiator_political_stability = f'{initiator} Political Stability'
+    initiator_unemployment_rate = f'{initiator} Unemployment Rate'
+
+    # Extract relevant state values for action calculation
+    initiator_public_trust_value = current_values[initiator_public_trust]
+    initiator_political_stability_value = current_values[initiator_political_stability]
+    initiator_unemployment_rate_value = current_values[initiator_unemployment_rate]
+
+    # Formula for the probability of the political action outcome
+    # 1. 总统大选
+    election_probability = 0.4 + 0.1 * (initiator_public_trust_value - 60) - 0.05 * (initiator_unemployment_rate_value - 8)
+    
+    # 2. 政治改革
+    reform_probability = 0.3 + 0.1 * (initiator_political_stability_value - 6) - 0.1 * (initiator_unemployment_rate_value - 8)
+    
+    # 3. 宪法修改
+    constitution_amendment_probability = 0.5 + 0.15 * (initiator_political_stability_value - 6) - 0.1 * (initiator_unemployment_rate_value - 8)
+
+    # 4. 领导人变动
+    leadership_change_probability = 0.3 + 0.05 * (initiator_public_trust_value - 60) - 0.1 * (initiator_unemployment_rate_value - 8)
+
+    # Simulate random outcome for the actions
+    random_value = np.random.random()
+    if random_value < election_probability:
+        row_actions[action_columns.index(action_column)] = 1  # Positive action for democracy (positive change)
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1  # Increase public trust due to democratic action
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1  # Increase stability due to positive election outcome
+
+    elif random_value < reform_probability:
+        row_actions[action_columns.index(action_column)] = -1  # Negative action for authoritarianism (negative change)
+        action_impacts[columns_X.index(initiator_public_trust)] -= 0.1  # Decrease public trust due to authoritarianism
+        action_impacts[columns_X.index(initiator_political_stability)] -= 0.1  # Decrease stability due to negative reform
+
+    elif random_value < constitution_amendment_probability:
+        row_actions[action_columns.index(action_column)] = 2  # Positive action for constitutional amendment
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.15  # Increase public trust
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.2  # Increase stability due to law and human rights protection
+
+    elif random_value < leadership_change_probability:
+        row_actions[action_columns.index(action_column)] = 1  # Positive action for leadership change (stability improvement)
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1  # Increase stability due to leadership change
+
+    return row_actions, action_impacts
+
+def economic_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Economic I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for initiator
+    initiator_gdp = f'{initiator} GDP'
+    initiator_unemployment_rate = f'{initiator} Unemployment Rate'
+    initiator_inflation_rate = f'{initiator} Inflation Rate'
+    initiator_government_spending = f'{initiator} Government Spending'
+    initiator_tax_rate = f'{initiator} Tax Rate'
+    initiator_trade_balance = f'{initiator} Trade Balance'
+
+    # Extract relevant state values for economic actions
+    initiator_gdp_value = current_values[initiator_gdp]
+    initiator_unemployment_rate_value = current_values[initiator_unemployment_rate]
+    initiator_inflation_rate_value = current_values[initiator_inflation_rate]
+    initiator_government_spending_value = current_values[initiator_government_spending]
+    initiator_tax_rate_value = current_values[initiator_tax_rate]
+    initiator_trade_balance_value = current_values[initiator_trade_balance]
+
+    # Economic stimulus policy (probability of implementing stimulus policy)
+    stimulus_probability = 0.3 + 0.05 * (initiator_gdp_value - 10000) - 0.1 * initiator_unemployment_rate_value + 0.2 * initiator_inflation_rate_value
+    random_value = np.random.random()
+
+    if random_value < stimulus_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for economic stimulus
+        # Apply the impact on states for A (Stimulus impact)
+        action_impacts[columns_X.index(initiator_government_spending)] += 0.1  # Increased government spending
+        action_impacts[columns_X.index(initiator_gdp)] += 0.2  # Stimulate economic growth
+        action_impacts[columns_X.index(initiator_trade_balance)] -= 0.05  # Potentially worsen trade balance due to increased imports
+
+    # Tax reform (probability of implementing tax reform)
+    tax_reform_probability = 0.4 + 0.1 * (initiator_tax_rate_value - 25) - 0.1 * initiator_inflation_rate_value
+    random_value = np.random.random()
+
+    if random_value < tax_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for tax reform
+        # Apply the impact on states for A (Tax reform impact)
+        action_impacts[columns_X.index(initiator_tax_rate)] -= 0.05  # Reduced tax rate
+        action_impacts[columns_X.index(initiator_gdp)] += 0.15  # Boost economic growth due to higher consumption
+        action_impacts[columns_X.index(initiator_unemployment_rate)] -= 0.05  # Decrease in unemployment due to boosted consumption
+
+    # Fiscal austerity policy (probability of implementing fiscal austerity)
+    austerity_probability = 0.3 + 0.05 * (initiator_gdp_value - 10000) - 0.2 * (initiator_government_spending_value - 2000)
+    random_value = np.random.random()
+
+    if random_value < austerity_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for fiscal austerity
+        # Apply the impact on states for A (Austerity impact)
+        action_impacts[columns_X.index(initiator_government_spending)] -= 0.1  # Reduced government spending
+        action_impacts[columns_X.index(initiator_gdp)] -= 0.1  # Economic slowdown due to cuts in government spending
+        action_impacts[columns_X.index(initiator_inflation_rate)] -= 0.05  # Inflation might decrease as a result of austerity
+
+    # Economic sanctions (probability of implementing economic sanctions)
+    sanctions_probability = 0.4 + 0.1 * (initiator_trade_balance_value - 100) - 0.1 * initiator_unemployment_rate_value
+    random_value = np.random.random()
+
+    if random_value < sanctions_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for economic sanctions (improve negotiation position)
+        # Apply the impact on states for A (Sanctions impact)
+        action_impacts[columns_X.index(initiator_trade_balance)] += 0.1  # Improved trade balance due to sanctions
+        action_impacts[columns_X.index(initiator_gdp)] += 0.05  # Economic boost due to improved negotiations
+        action_impacts[columns_X.index(initiator_inflation_rate)] += 0.03  # Inflation might increase due to retaliatory actions
+
+    return row_actions, action_impacts
+
+def military_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Military I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for initiator
+    initiator_military_power = f'{initiator} Military Power'
+    initiator_military_spending = f'{initiator} Military Spending'
+    initiator_gdp = f'{initiator} GDP'
+    initiator_inflation_rate = f'{initiator} Inflation Rate'
+    initiator_trade_balance = f'{initiator} Trade Balance'
+    initiator_population = f'{initiator} Population'
+
+    # Extract relevant state values for military actions
+    initiator_military_power_value = current_values[initiator_military_power]
+    initiator_military_spending_value = current_values[initiator_military_spending]
+    initiator_gdp_value = current_values[initiator_gdp]
+    initiator_inflation_rate_value = current_values[initiator_inflation_rate]
+    initiator_trade_balance_value = current_values[initiator_trade_balance]
+    initiator_population_value = current_values[initiator_population]
+
+    # Military expansion (probability of expanding military forces)
+    expansion_probability = 0.3 + 0.1 * (initiator_military_power_value - 1000) + 0.1 * (initiator_gdp_value - 15000) - 0.1 * initiator_inflation_rate_value
+    random_value = np.random.random()
+
+    if random_value < expansion_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for military expansion
+        # Apply the impact on states for A (Military Expansion impact)
+        action_impacts[columns_X.index(initiator_military_spending)] += 0.1  # Increased military spending
+        action_impacts[columns_X.index(initiator_military_power)] += 0.2  # Increase military power
+        action_impacts[columns_X.index(initiator_trade_balance)] -= 0.05  # Trade balance may worsen due to increased military imports
+
+    # Military reduction (probability of reducing military forces)
+    reduction_probability = 0.4 - 0.05 * (initiator_military_spending_value - 500) - 0.1 * (initiator_military_power_value - 1000)
+    random_value = np.random.random()
+
+    if random_value < reduction_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for military reduction
+        # Apply the impact on states for A (Military Reduction impact)
+        action_impacts[columns_X.index(initiator_military_spending)] -= 0.1  # Decrease military spending
+        action_impacts[columns_X.index(initiator_military_power)] -= 0.2  # Reduce military power
+        action_impacts[columns_X.index(initiator_trade_balance)] += 0.05  # Trade balance may improve due to reduced military imports
+
+    # Military reform (probability of implementing military reform)
+    reform_probability = 0.3 + 0.05 * (initiator_military_spending_value - 500) + 0.2 * (initiator_gdp_value - 15000) - 0.1 * initiator_population_value
+    random_value = np.random.random()
+
+    if random_value < reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 3  # Positive action for military reform
+        # Apply the impact on states for A (Military Reform impact)
+        action_impacts[columns_X.index(initiator_military_spending)] += 0.1  # Increased military spending for reform
+        action_impacts[columns_X.index(initiator_military_power)] += 0.1  # Improvement in military power due to reform
+        action_impacts[columns_X.index(initiator_gdp)] += 0.05  # Potential increase in GDP due to military industry reform
+
+    # New weapons development (probability of developing new weapons)
+    weapons_development_probability = 0.3 + 0.1 * (initiator_military_spending_value - 500) - 0.1 * (initiator_inflation_rate_value - 3) + 0.15 * (initiator_population_value - 1000000)
+    random_value = np.random.random()
+
+    if random_value < weapons_development_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 4  # Positive action for new weapons development
+        # Apply the impact on states for A (Weapons Development impact)
+        action_impacts[columns_X.index(initiator_military_spending)] += 0.2  # Increased spending on weapons development
+        action_impacts[columns_X.index(initiator_military_power)] += 0.3  # Military power increases due to new weapons
+        action_impacts[columns_X.index(initiator_trade_balance)] -= 0.05  # Possible trade balance deterioration due to import of raw materials
+
+    # Third-party military interactions (probability of engaging with third parties)
+    third_party_interaction_probability = 0.2 + 0.1 * (initiator_military_power_value - 1000) - 0.05 * (initiator_trade_balance_value - 50) + 0.1 * (initiator_inflation_rate_value - 3)
+    random_value = np.random.random()
+
+    if random_value < third_party_interaction_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 5  # Positive action for military interaction with third party
+        # Apply the impact on states for A (Third-party interaction impact)
+        action_impacts[columns_X.index(initiator_military_spending)] += 0.1  # Increased spending on foreign military cooperation
+        action_impacts[columns_X.index(initiator_military_power)] += 0.2  # Military power increases due to collaboration
+        action_impacts[columns_X.index(initiator_trade_balance)] -= 0.05  # Trade balance may be affected due to foreign trade links
+
+    return row_actions, action_impacts
+
+def diplomatic_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Diplomatic I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for the initiator
+    initiator_public_trust = f'{initiator} Public Trust'
+    initiator_political_stability = f'{initiator} Political Stability'
+    initiator_military_power = f'{initiator} Military Power'
+
+    # 1. 外交政策调整 (Diplomatic Policy Adjustment)
+    diplomatic_policy_adjustment_probability = 0.3 + 0.1 * (current_values[initiator_public_trust] - 60) + 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+    
+    if random_value < diplomatic_policy_adjustment_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for diplomatic policy adjustment
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.05
+
+    # 2. 国际条约签署 (International Treaty Signing)
+    international_treaty_signing_probability = 0.4 + 0.05 * (current_values[initiator_public_trust] - 60)
+    random_value = np.random.random()
+    
+    if random_value < international_treaty_signing_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 3  # Positive action for signing international treaties
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1
+        action_impacts[columns_X.index(initiator_military_power)] += 0.05
+
+    # 3. 加入国际军事联盟 (Join International Military Alliance)
+    international_military_alliance_probability = 0.3 + 0.1 * (current_values[initiator_public_trust] - 60) - 0.1 * (current_values[initiator_military_power] - 700)
+    random_value = np.random.random()
+    
+    if random_value < international_military_alliance_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for joining military alliance
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_military_power)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.05
+
+    # 4. 维护国家主权 (Maintain National Sovereignty)
+    national_sovereignty_probability = 0.4 + 0.05 * (current_values[initiator_public_trust] - 60) - 0.05 * (current_values[initiator_military_power] - 700)
+    random_value = np.random.random()
+
+    if random_value < national_sovereignty_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for maintaining national sovereignty
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.05
+        action_impacts[columns_X.index(initiator_military_power)] += 0.1
+
+    # 5. 结束外交关系 (End Diplomatic Relations)
+    end_diplomatic_relations_probability = 0.3 - 0.05 * (current_values[initiator_public_trust] - 60) - 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+    
+    if random_value < end_diplomatic_relations_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = -2  # Negative action for ending diplomatic relations
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] -= 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] -= 0.05
+
+    return row_actions, action_impacts
+
+def social_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Social I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for the initiator
+    initiator_public_trust = f'{initiator} Public Trust'
+    initiator_political_stability = f'{initiator} Political Stability'
+    initiator_unemployment_rate = f'{initiator} Unemployment Rate'
+
+    # 1. 实施社会福利增加 (Increase Social Welfare)
+    increase_social_welfare_probability = 0.4 + 0.1 * (current_values[initiator_public_trust] - 60) + 0.05 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < increase_social_welfare_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for increasing social welfare
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1
+
+    # 2. 社会福利改革 (Social Welfare Reform)
+    social_welfare_reform_probability = 0.4 + 0.05 * (current_values[initiator_public_trust] - 60) - 0.05 * (current_values[initiator_unemployment_rate] - 5)
+    random_value = np.random.random()
+
+    if random_value < social_welfare_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for social welfare reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1
+
+    # 3. 养老保障/医疗改革 (Pension/Healthcare Reform)
+    pension_healthcare_reform_probability = 0.5 + 0.1 * (current_values[initiator_public_trust] - 60) - 0.1 * (current_values[initiator_unemployment_rate] - 5)
+    random_value = np.random.random()
+
+    if random_value < pension_healthcare_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for pension/healthcare reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.2
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1
+
+    # 4. 教育水平改革 (Education Reform)
+    education_reform_probability = 0.3 + 0.05 * (current_values[initiator_public_trust] - 60) - 0.05 * (current_values[initiator_unemployment_rate] - 5)
+    random_value = np.random.random()
+
+    if random_value < education_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for education reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.1
+
+    # 5. 劳动市场改革 (Labor Market Reform)
+    labor_market_reform_probability = 0.3 + 0.05 * (current_values[initiator_public_trust] - 60) - 0.05 * (current_values[initiator_unemployment_rate] - 5)
+    random_value = np.random.random()
+
+    if random_value < labor_market_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for labor market reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_public_trust)] += 0.1
+        action_impacts[columns_X.index(initiator_political_stability)] += 0.05
+
+    return row_actions, action_impacts
+
+def environmental_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Environmental I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for the initiator
+    initiator_environment_spending = f'{initiator} Environment Spending'
+    initiator_political_stability = f'{initiator} Political Stability'
+
+    # 1. 环境保护政策 (Environmental Protection Policy)
+    environmental_protection_policy_probability = 0.5 + 0.1 * (current_values[initiator_environment_spending] - 30) + 0.2 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < environmental_protection_policy_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for environmental protection
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_environment_spending)] += 0.2
+        action_impacts[columns_X.index(f'{initiator} Environmental Quality')] += 0.2
+
+    # 2. 实施能源独立政策 (Energy Independence Policy)
+    energy_independence_policy_probability = 0.4 + 0.1 * (current_values[initiator_environment_spending] - 30) + 0.05 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < energy_independence_policy_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for energy independence
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_environment_spending)] += 0.1
+        action_impacts[columns_X.index(f'{initiator} Energy Production')] += 0.1
+
+    # 3. 推行可再生能源计划 (Renewable Energy Plan)
+    renewable_energy_plan_probability = 0.5 + 0.2 * (current_values[initiator_environment_spending] - 30) + 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < renewable_energy_plan_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for renewable energy
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_environment_spending)] += 0.2
+        action_impacts[columns_X.index(f'{initiator} Energy Production')] += 0.15
+
+    # 4. 实施碳税政策 (Carbon Tax Policy)
+    carbon_tax_policy_probability = 0.5 + 0.15 * (current_values[initiator_environment_spending] - 30) - 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < carbon_tax_policy_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for carbon tax
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_environment_spending)] += 0.2
+        action_impacts[columns_X.index(f'{initiator} Energy Consumption')] -= 0.1
+
+    # 5. 启动生态修复项目 (Ecological Restoration Project)
+    ecological_restoration_probability = 0.5 + 0.1 * (current_values[initiator_environment_spending] - 30) + 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < ecological_restoration_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for ecological restoration
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_environment_spending)] += 0.2
+        action_impacts[columns_X.index(f'{initiator} Environmental Quality')] += 0.3
+
+    return row_actions, action_impacts
+
+def technology_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Technology I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for the initiator
+    initiator_technology_investment = f'{initiator} Technology Investment'
+    initiator_innovation_index = f'{initiator} Innovation Index'
+    initiator_political_stability = f'{initiator} Political Stability'
+
+    # 1. 科技政策改革 (Technology Policy Reform)
+    technology_policy_reform_probability = 0.5 + 0.1 * (current_values[initiator_technology_investment] - 250) + 0.1 * (current_values[initiator_innovation_index] - 50)
+    random_value = np.random.random()
+
+    if random_value < technology_policy_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for technology policy reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_technology_investment)] += 0.2
+        action_impacts[columns_X.index(initiator_innovation_index)] += 0.2
+
+    # 2. 推动数字货币政策 (Digital Currency Policy)
+    digital_currency_policy_probability = 0.4 + 0.1 * (current_values[initiator_technology_investment] - 250) + 0.1 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < digital_currency_policy_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for digital currency policy
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_technology_investment)] += 0.1
+        action_impacts[columns_X.index(f'{initiator} Financial Stability')] += 0.1
+
+    # 3. 推动人工智能发展计划 (Artificial Intelligence Development Plan)
+    ai_development_plan_probability = 0.5 + 0.1 * (current_values[initiator_innovation_index] - 50) + 0.1 * (current_values[initiator_technology_investment] - 250)
+    random_value = np.random.random()
+
+    if random_value < ai_development_plan_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for AI development
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_technology_investment)] += 0.2
+        action_impacts[columns_X.index(initiator_innovation_index)] += 0.2
+
+    # 4. 网络安全政策加强 (Cybersecurity Policy Enhancement)
+    cybersecurity_policy_enhancement_probability = 0.4 + 0.1 * (current_values[initiator_technology_investment] - 250) + 0.05 * (current_values[initiator_political_stability] - 6)
+    random_value = np.random.random()
+
+    if random_value < cybersecurity_policy_enhancement_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for cybersecurity policy
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_technology_investment)] += 0.1
+        action_impacts[columns_X.index(f'{initiator} National Security')] += 0.1
+
+    # 5. 创新型技术研发投资 (Innovative Technology R&D Investment)
+    technology_rnd_investment_probability = 0.5 + 0.15 * (current_values[initiator_technology_investment] - 250) + 0.1 * (current_values[initiator_innovation_index] - 50)
+    random_value = np.random.random()
+
+    if random_value < technology_rnd_investment_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for R&D investment
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_technology_investment)] += 0.2
+        action_impacts[columns_X.index(f'{initiator} Industrial Competitiveness')] += 0.15
+
+    return row_actions, action_impacts
+
+def health_I(initiator, current_values, action_columns, row_actions, action_impacts):
+    # Define the action column name dynamically based on initiator
+    action_column = f'{initiator} Health I'
+
+    # Check if the action column exists in action_columns
+    if action_column not in action_columns:
+        raise ValueError(f"Column '{action_column}' not found in action_columns!")
+
+    # Define state parameter keys for the initiator
+    initiator_public_health = f'{initiator} Public Health'
+    initiator_health_spending = f'{initiator} Health Spending'
+    initiator_public_trust = f'{initiator} Public Trust'
+
+    # 1. 公共卫生改革 (Public Health Reform)
+    public_health_reform_probability = 0.5 + 0.1 * (current_values[initiator_health_spending] - 100) + 0.1 * (current_values[initiator_public_trust] - 60)
+    random_value = np.random.random()
+
+    if random_value < public_health_reform_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for public health reform
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_health_spending)] += 0.2
+        action_impacts[columns_X.index(initiator_public_health)] += 0.2
+
+    # 2. 疫苗研发与推广 (Vaccine Development and Promotion)
+    vaccine_development_probability = 0.5 + 0.15 * (current_values[initiator_health_spending] - 100) + 0.2 * (current_values[initiator_public_trust] - 60)
+    random_value = np.random.random()
+
+    if random_value < vaccine_development_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for vaccine development
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_health_spending)] += 0.2
+        action_impacts[columns_X.index(initiator_public_health)] += 0.25
+
+    # 3. 防疫措施 (Epidemic Prevention Measures)
+    epidemic_prevention_probability = 0.5 + 0.1 * (current_values[initiator_health_spending] - 100) + 0.15 * (current_values[initiator_public_trust] - 60)
+    random_value = np.random.random()
+
+    if random_value < epidemic_prevention_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 2  # Positive action for epidemic prevention
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_health_spending)] += 0.2
+        action_impacts[columns_X.index(initiator_public_health)] += 0.2
+
+    # 4. 国家应急响应 (National Emergency Response)
+    emergency_response_probability = 0.5 + 0.1 * (current_values[initiator_health_spending] - 100) + 0.1 * (current_values[initiator_public_trust] - 60)
+    random_value = np.random.random()
+
+    if random_value < emergency_response_probability:
+        action_index = action_columns.index(action_column)
+        row_actions[action_index] = 1  # Positive action for national emergency response
+        # Apply the impact on states
+        action_impacts[columns_X.index(initiator_health_spending)] += 0.1
+        action_impacts[columns_X.index(initiator_public_health)] += 0.15
+
+    return row_actions, action_impacts
 
 # Initialize an empty DataFrame for actions with columns and the appropriate number of rows
 data_actions = pd.DataFrame(columns=action_columns, index=range(number_rows))
@@ -617,6 +1170,9 @@ initial_values = {
     'A Social Welfare Spending': 100,  # New added parameter for A's social welfare spending
     'A Social Security Reform':1,
     'A Social Welfare':100,
+    'A Tax Rate': 25,  # New added parameter for A's tax rate
+    'A National Security': 100,
+    'A Financial Stability':100,
 
     'B GDP': 12000, 
     'B Unemployment Rate': 8.5,  # Increased B's Unemployment Rate to make aid more likely
@@ -653,6 +1209,9 @@ initial_values = {
     'B Social Welfare Spending': 100,  # New added parameter for B's social welfare spending
     'B Social Security Reform':1,
     'B Social Welfare':100,
+    'B Tax Rate': 20,  # New added parameter for B's tax rate
+    'B National Security': 100, 
+    'B Financial Stability':100,
     
     'A to B Imports': 200, 
     'A to B Exports': 150, 
@@ -696,6 +1255,21 @@ for i in range(1, number_rows):
             row_actions, action_impacts = environmental_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
             row_actions, action_impacts = technology_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
             row_actions, action_impacts = health_T(initiator, target, current_values, action_columns, row_actions, action_impacts)
+
+        # List of initiators
+        initiators = ['A', 'B']
+
+        # Iterate over each initiator and apply the corresponding action functions
+        for initiator in initiators:
+            # Call political_I for the initiator, which does not need a target
+            row_actions, action_impacts = political_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = economic_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = military_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = diplomatic_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = social_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = environmental_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            #row_actions, action_impacts = technology_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = health_I(initiator, current_values, action_columns, row_actions, action_impacts)
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
     for col in columns_X:
