@@ -138,8 +138,8 @@ for i in range(number_rows):
     growth_trend = 0.0002  # Assumed average annual growth rate of 1% for most parameters
     
     # Periodic terms (sinusoidal variations)
-    period_1 = 52.177142857  # Annual cycle (weekly data, approximately 1 year per cycle)
-    period_2 = 208.70857142857  # Longer cycle (~4 years for example)
+    period_1 = 52.1775  # Annual cycle (weekly data, approximately 1 year per cycle)
+    period_2 = 208.71  # Longer cycle (~4 years for example)
     
     # Random phase shifts for each periodic term
     phase_1 = np.random.uniform(0, 2 * np.pi)

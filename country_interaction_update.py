@@ -1272,18 +1272,37 @@ for i in range(1, number_rows):
             row_actions, action_impacts = health_I(initiator, current_values, action_columns, row_actions, action_impacts)
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
+    growth_trend = 0.0000  # Assumed average annual growth rate of 0.02% for most parameters
+
+    # Periodic terms (sinusoidal variations)
+    period_1 = 52.1775  # Annual cycle (weekly data, approximately 1 year per cycle)
+    period_2 = 208.71  # Longer cycle (~4 years for example)
+
+    # Random phase shifts for each periodic term
+    phase_1 = np.random.uniform(0, 2 * np.pi)
+    phase_2 = np.random.uniform(0, 2 * np.pi)
+
     for col in columns_X:
-        # Apply random fluctuation to the state value
-        change = np.random.uniform(-2, 2)
-        new_value = current_values[col] * (1 + change / 100) if 'Rate' in col or 'Index' in col else current_values[col] + change
+        # Base value with linear growth over time
+        linear_growth = current_values[col] * (1 + growth_trend)  # Apply growth rate
+        
+        # Generate independent phase shifts and amplitudes for each parameter
+        phase_1 = np.random.uniform(0, 2 * np.pi)  # Random phase shift for the first cycle
+        phase_2 = np.random.uniform(0, 2 * np.pi)  # Random phase shift for the second cycle
+        
+        # Periodic sinusoidal fluctuations for the parameter
+        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.02, 0.05))
+        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.02, 0.05))
 
-        # Apply the accumulated action impact to the state value
-        action_effect = action_impacts[columns_X.index(col)]
-        new_value += action_effect  # Add the impact of actions on the state parameter
+        # Add a small random fluctuation proportional to the initial value
+        random_fluctuation = np.random.uniform(-0.01, 0.01) * initial_values[col]
 
+        # Combine the trend, periodic fluctuations, and random fluctuation
+        new_value = linear_growth + periodic_1 + periodic_2 + random_fluctuation
         current_values[col] = new_value  # Update the current value
-        row_state.append(round(new_value, 2))  # Append the updated state value to the row state
-
+        
+        # Append the new value to the row
+        row_state.append(round(new_value, 2))
     # Assign the row actions directly to the DataFrame
     data_actions.loc[i] = row_actions
     data_X_optimized.append(row_state)  # Append the row state data
