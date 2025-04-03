@@ -1008,6 +1008,9 @@ def technology_I(initiator, current_values, action_columns, row_actions, action_
     initiator_technology_investment = f'{initiator} Technology Investment'
     initiator_innovation_index = f'{initiator} Innovation Index'
     initiator_political_stability = f'{initiator} Political Stability'
+    initiator_financial_stability = f'{initiator} Financial Stability'
+    initiator_industrial_competitiveness = f'{initiator} Industrial Competitiveness'
+    initiator_national_security = f'{initiator} National Security'
 
     # 1. 科技政策改革 (Technology Policy Reform)
     technology_policy_reform_probability = 0.5 + 0.1 * (current_values[initiator_technology_investment] - 250) + 0.1 * (current_values[initiator_innovation_index] - 50)
@@ -1029,7 +1032,7 @@ def technology_I(initiator, current_values, action_columns, row_actions, action_
         row_actions[action_index] = 1  # Positive action for digital currency policy
         # Apply the impact on states
         action_impacts[columns_X.index(initiator_technology_investment)] += 0.1
-        action_impacts[columns_X.index(f'{initiator} Financial Stability')] += 0.1
+        action_impacts[columns_X.index(initiator_financial_stability)] += 0.1
 
     # 3. 推动人工智能发展计划 (Artificial Intelligence Development Plan)
     ai_development_plan_probability = 0.5 + 0.1 * (current_values[initiator_innovation_index] - 50) + 0.1 * (current_values[initiator_technology_investment] - 250)
@@ -1051,7 +1054,7 @@ def technology_I(initiator, current_values, action_columns, row_actions, action_
         row_actions[action_index] = 1  # Positive action for cybersecurity policy
         # Apply the impact on states
         action_impacts[columns_X.index(initiator_technology_investment)] += 0.1
-        action_impacts[columns_X.index(f'{initiator} National Security')] += 0.1
+        action_impacts[columns_X.index(initiator_national_security)] += 0.1
 
     # 5. 创新型技术研发投资 (Innovative Technology R&D Investment)
     technology_rnd_investment_probability = 0.5 + 0.15 * (current_values[initiator_technology_investment] - 250) + 0.1 * (current_values[initiator_innovation_index] - 50)
@@ -1062,7 +1065,7 @@ def technology_I(initiator, current_values, action_columns, row_actions, action_
         row_actions[action_index] = 2  # Positive action for R&D investment
         # Apply the impact on states
         action_impacts[columns_X.index(initiator_technology_investment)] += 0.2
-        action_impacts[columns_X.index(f'{initiator} Industrial Competitiveness')] += 0.15
+        #action_impacts[columns_X.index(initiator_industrial_competitiveness)] += 0.15
 
     return row_actions, action_impacts
 
@@ -1268,7 +1271,7 @@ for i in range(1, number_rows):
             row_actions, action_impacts = diplomatic_I(initiator, current_values, action_columns, row_actions, action_impacts)
             row_actions, action_impacts = social_I(initiator, current_values, action_columns, row_actions, action_impacts)
             row_actions, action_impacts = environmental_I(initiator, current_values, action_columns, row_actions, action_impacts)
-            #row_actions, action_impacts = technology_I(initiator, current_values, action_columns, row_actions, action_impacts)
+            row_actions, action_impacts = technology_I(initiator, current_values, action_columns, row_actions, action_impacts)
             row_actions, action_impacts = health_I(initiator, current_values, action_columns, row_actions, action_impacts)
 
     # Apply the action impacts to the state values (i.e., update the state values with the impact of the actions)
@@ -1291,8 +1294,8 @@ for i in range(1, number_rows):
         phase_2 = np.random.uniform(0, 2 * np.pi)  # Random phase shift for the second cycle
         
         # Periodic sinusoidal fluctuations for the parameter
-        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.02, 0.05))
-        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.02, 0.05))
+        periodic_1 = np.sin(2 * np.pi * (i / period_1) + phase_1) * (initial_values[col] * np.random.uniform(0.01, 0.03))
+        periodic_2 = np.sin(2 * np.pi * (i / period_2) + phase_2) * (initial_values[col] * np.random.uniform(0.01, 0.03))
 
         # Add a small random fluctuation proportional to the initial value
         random_fluctuation = np.random.uniform(-0.01, 0.01) * initial_values[col]
