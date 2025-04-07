@@ -1232,9 +1232,7 @@ initial_values = {
 # Generate state data and actions row by row
 current_values = initial_values.copy()
 
-# Generate the first row of actions and states
-# For each action, calculate its value based on the current state values (from the previous row)
-# Generate state data and actions row by row
+# Generate the data with fluctuations 
 for i in range(1, number_rows):
     row_actions = [0] * len(action_columns)  # Initialize the row actions to zero for each action
     row_state = []  # Initialize a list for the state values
@@ -1302,13 +1300,20 @@ for i in range(1, number_rows):
 
         # Combine the trend, periodic fluctuations, and random fluctuation
         new_value = linear_growth + periodic_1 + periodic_2 + random_fluctuation
+
+        # Add action impacts to the current state value
+        action_impact = action_impacts[columns_X.index(col)]  # Get the impact for this state parameter
+        new_value += action_impact  # Apply the action impact to the new value
+
         current_values[col] = new_value  # Update the current value
         
         # Append the new value to the row
         row_state.append(round(new_value, 2))
+    
     # Assign the row actions directly to the DataFrame
     data_actions.loc[i] = row_actions
     data_X_optimized.append(row_state)  # Append the row state data
+
 
 # Convert the list of rows into a DataFrame
 df_X_optimized = pd.DataFrame(data_X_optimized, columns=columns_X)
